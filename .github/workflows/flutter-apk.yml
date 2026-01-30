@@ -1,0 +1,56 @@
+name: Build AdaptiveAssistant APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # (Ixtiyoriy, lekin yaxshi) Qaysi papkada build qilayotganini ko‘rsatadi
+      - name: Debug paths
+        run: |
+          echo "PWD: $(pwd)"
+          echo "Root list:"
+          ls -la
+          echo "AdaptiveAssistant list:"
+          ls -la AdaptiveAssistant
+
+      - name: Flutter pub get
+        working-directory: AdaptiveAssistant
+        run: flutter pub get
+
+      - name: Flutter analyze
+        working-directory: AdaptiveAssistant
+        run: flutter analyze
+
+      - name: Run tests (optional)
+        working-directory: AdaptiveAssistant
+        run: flutter test
+        continue-on-error: true
+
+      - name: Build release APK
+        working-directory: AdaptiveAssistant
+        run: flutter build apk --release
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: adaptiveassistant-release-apk
+          path: AdaptiveAssistant/build/app/outputs/flutter-apk/app-release.apk
