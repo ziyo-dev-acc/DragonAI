@@ -20,13 +20,15 @@ jobs:
           cache: true
 
       - name: Install dependencies
+        working-directory: zassistent/AdaptiveAssistant
         run: flutter pub get
 
       - name: Build release APK
+        working-directory: zassistent/AdaptiveAssistant
         run: flutter build apk --release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: adaptiveassistant-release-apk
+          path: zassistent/AdaptiveAssistant/build/app/outputs/flutter-apk/app-release.apk
