@@ -1,0 +1,65 @@
+name: Build AdaptiveAssistant APK
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Debug - repo layout
+        shell: bash
+        run: |
+          set -euxo pipefail
+          pwd
+          ls -la
+          echo "---- AdaptiveAssistant ----"
+          ls -la AdaptiveAssistant
+          echo "---- find pubspec.yaml ----"
+          find . -maxdepth 3 -name "pubspec.yaml" -print
+
+      - name: Flutter/Dart versions
+        shell: bash
+        run: |
+          set -euxo pipefail
+          flutter --version
+          dart --version
+
+      - name: Pub get (AdaptiveAssistant)
+        working-directory: AdaptiveAssistant
+        shell: bash
+        run: |
+          set -euxo pipefail
+          flutter pub get
+
+      # NOTE: Avval buildni o‘tkazib olaylik. Analyze/test ba'zan keraksiz yiqitadi.
+      # Keyin xohlasangiz yana qo'shamiz.
+
+      - name: Build release APK (AdaptiveAssistant)
+        working-directory: AdaptiveAssistant
+        shell: bash
+        run: |
+          set -euxo pipefail
+          flutter build apk --release -v
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: adaptiveassistant-release-apk
+          path: AdaptiveAssistant/build/app/outputs/flutter-apk/app-release.apk
